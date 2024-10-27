@@ -40,7 +40,7 @@ model_path = os.path.join(os.path.dirname(__file__), 'model_VGG16_v4.keras')
 modelt = load_model(model_path)
 
 # Endpoint para subir y clasificar la imagen
-@app.route('/api/upload_image', methods=['POST'])
+@app.route('/', methods=['POST'])
 def upload_image():
     # Verificar si hay un archivo en la solicitud
     if 'file' not in request.files:
