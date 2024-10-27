@@ -44,6 +44,9 @@
         const fileInput = document.getElementById('fileInput');
         const imagePreview = document.getElementById('imagePreview');
         const responseMessage = document.getElementById('responseMessage');
+        var loc = window.location.pathname;
+        var dir = loc.substring(0, loc.lastIndexOf('/'));
+        console.log(dir);
 
         // Event listener for file input change to show image preview
         fileInput.addEventListener('change', function(event) {
