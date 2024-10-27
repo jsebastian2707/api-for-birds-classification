@@ -13,7 +13,7 @@
             <div class="col-md-6">
                 <div class="card shadow-lg">
                     <div class="card-body">
-                        <h2 class="text-center mb-4">subir imagen</h2>
+                        <h2 class="text-center mb-4">Subir Imagen</h2>
                         <form id="uploadForm" enctype="multipart/form-data" class="needs-validation" novalidate>
                             <div class="mb-3">
                                 <input type="file" name="file" id="fileInput" class="form-control" accept="image/*" required>
@@ -65,6 +65,7 @@
             const formData = new FormData();
             formData.append('file', fileInput.files[0]);
 
+            // Actualiza aquí la ruta de render
             fetch('http://127.0.0.1:5000/api/upload_image', {
                 method: 'POST',
                 body: formData

@@ -9,63 +9,27 @@ import matplotlib.pyplot as plt
 from keras.applications.imagenet_utils import preprocess_input, decode_predictions
 
 
-names = ['Anambé Barrado',
-'Anambé Cinéreo',
-'Anambé Unicolor',
-'Cabezón Alas Blancas',
-'Cabezón Canelo',
-'Cabezón sp.',
-'Cimerillo Andino',
-'Cotinga Cresticastaño',
-'Cotinga Crestirrojo',
-'Curutié Colorado',
-'Frutero Barrado',
-'Frutero Pechidorado',
-'Frutero Verdinegro',
-'Gallito de las Rocas Peruano',
-'Guardabosques Oscuro',
-'Moscareta Colinegra',
-'Mosquerito Espatulilla Común',
-'Mosquerito Espatulilla Gris',
-'Mosquerito Ocre',
-'Mosquerito Ojiblanco',
-'Mosquerito Ojos Blancos',
-'Mosquerito Piquicurvo Sureño',
-'Mosquero Rayadito',
-'Mosqueta Capirotada',
-'Orejerito Antioqueño',
-'Orejerito Jaspeado',
-'Orejerito Variegado',
-'Orejero Coronigrís',
-'Orejero Pechirrufo',
-'Picoplano Bigotudo',
-'Picoplano Equinoccial',
-'Picoplano Pechirrufo',
-'Pijuí Pechiblanco',
-'Piprites Verde',
-'Piscuiz Barbiblanco',
-'Saltarín Alidorado',
-'Saltarín Amarillo',
-'Saltarín Barbiblanco',
-'Saltarín Cabecidorado',
-'Saltarín Coroniazul (velutina/minuscula)',
-'Saltarín Coroniblanco',
-'Saltarín Gorjiblanco Oriental',
-'Saltarín Lanceolado',
-'Saltarín Rayado Occidental',
-'Tiranuelo Bronceado',
-'Tiranuelo Cabecirrojo',
-'Titira Pico Negro',
-'Titira Puerquito',
-'Titirijí Cabecinegro',
-'Titirijí Capirrufo',
-'Titirijí Gorjinegro',
-'Titirijí Perlado',
-'Yacutoro']
+names = [
+    'Amazona Alinaranja', 'Amazona de San Vicente', 'Amazona Mercenaria', 'Amazona Real',
+    'Aratinga de Pinceles', 'Aratinga de Wagler', 'Aratinga Ojiblanca', 'Aratinga Orejigualda',
+    'Aratinga Pertinaz', 'Batará Barrado', 'Batará Crestibarrado', 'Batara Crestinegro',
+    'Batará Mayor', 'Batará Pizarroso Occidental', 'Batará Unicolor', 'Cacatua Ninfa',
+    'Catita Frentirrufa', 'Cotorra Colinegra', 'Cotorra Pechiparda', 'Cotorrita Alipinta',
+    'Cotorrita de Anteojos', 'Guacamaya Roja', 'Guacamaya Verde', 'Guacamayo Aliverde',
+    'Guacamayo azuliamarillo', 'Guacamayo Severo', 'Hormiguerito Coicorita Norteño',
+    'Hormiguerito Coicorita Sureño', 'Hormiguerito Flanquialbo', 'Hormiguerito Leonado',
+    'Hormiguerito Plomizo', 'Hormiguero Azabache', 'Hormiguero Cantor', 'Hormiguero de Parker',
+    'Hormiguero Dorsicastaño', 'Hormiguero Guardarribera Oriental', 'Hormiguero Inmaculado',
+    'Hormiguero Sencillo', 'Hormiguero Ventriblanco', 'Lorito Amazonico', 'Lorito Cabecigualdo',
+    'Lorito de fuertes', 'Loro Alibronceado', 'Loro Cabeciazul', 'Loro Cachetes Amarillos',
+    'Loro Corona Azul', 'Loro Tumultuoso', 'Ojodefuego Occidental', 'Periquito Alas Amarillas',
+    'Periquito Australiano', 'Periquito Barrado', 'Tiluchí Colilargo', 'Tiluchí de Santander',
+    'Tiluchi Lomirrufo'
+]
 
 # Cargar el modelo
 dirname = os.path.dirname(__file__)
-modelt = load_model(os.path.join(dirname, 'Modelosmodel_VGG16_v6.keras'))
+modelt = load_model(os.path.join(dirname, 'model_VGG16_v4.keras'))
 #modelt = custom_vgg_model
 
 app = Flask(__name__)
