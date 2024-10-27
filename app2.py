@@ -1,11 +1,11 @@
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import os
-from keras.models import load_model
 import cv2
 import numpy as np
+from keras.models import load_model
 from keras.applications.imagenet_utils import preprocess_input
-from tensorflow.keras import backend as K  # Import para liberar memoria
+from tensorflow.keras import backend as K
 
 names = [
     'Amazona Alinaranja', 'Amazona de San Vicente', 'Amazona Mercenaria', 'Amazona Real',
@@ -27,20 +27,19 @@ names = [
 
 # Inicializa la app
 app = Flask(__name__)
-CORS(app, resources={r"/api/*": {"origins": "https://api-for-birds-classification.onrender.com/"}})
+CORS(app)
 
 # Configuración para Render
 app.config['UPLOAD_FOLDER'] = '/tmp/uploaded_images'  # Carpeta temporal
 if not os.path.exists(app.config['UPLOAD_FOLDER']):
     os.makedirs(app.config['UPLOAD_FOLDER'])
 
-
 # Cargar el modelo una vez para evitar cargarlo múltiples veces
 model_path = os.path.join(os.path.dirname(__file__), 'model_VGG16_v4.keras')
 modelt = load_model(model_path)
 
 # Endpoint para subir y clasificar la imagen
-@app.route('/api/upload_image', methods=['POST'])
+@app.route('/', methods=['POST'])
 def upload_image():
     # Verificar si hay un archivo en la solicitud
     if 'file' not in request.files:
@@ -57,8 +56,12 @@ def upload_image():
         file.save(filepath)
         
         try:
-            # Leer, redimensionar y preprocesar la imagen
-            imaget = cv2.resize(cv2.imread(filepath), (224, 224), interpolation=cv2.INTER_AREA)
+            # Leer y preprocesar la imagen (sin redimensionar)
+            imaget = cv2.imread(filepath)
+            if imaget is None or imaget.shape[:2] != (224, 224):
+                os.remove(filepath)
+                return jsonify({"error": "Image size is incorrect. Please upload a 224x224 image."}), 400
+
             xt = np.expand_dims(preprocess_input(np.asarray(imaget)), axis=0)
 
             # Obtener las predicciones
@@ -69,7 +72,6 @@ def upload_image():
 
             # Limpiar la imagen después de usarla
             os.remove(filepath)
-            K.clear_session()  
 
             return jsonify({
                 "message": f'Clase predicha: {predicted_class_name}, Porcentaje de confianza: {confidence_percentage:.2f}%',

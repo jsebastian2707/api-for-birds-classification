@@ -44,9 +44,6 @@
         const fileInput = document.getElementById('fileInput');
         const imagePreview = document.getElementById('imagePreview');
         const responseMessage = document.getElementById('responseMessage');
-        var loc = window.location.pathname;
-        var dir = loc.substring(0, loc.lastIndexOf('/'));
-        console.log(location.href.replace(/(.+\w\/)(.+)/,"/$2"));
 
         // Event listener for file input change to show image preview
         fileInput.addEventListener('change', function(event) {
@@ -63,30 +60,59 @@
             }
         });
 
+        // Resize the image to 224x224 pixels
+        function resizeImage(file, callback) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    canvas.width = 224;
+                    canvas.height = 224;
+                    ctx.drawImage(img, 0, 0, 224, 224);
+                    canvas.toBlob(callback, 'image/jpeg'); // Convert canvas to blob
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
         form.addEventListener('submit', function(event) {
             event.preventDefault();
-            const formData = new FormData();
-            formData.append('file', fileInput.files[0]);
 
-            // Actualiza aquí la ruta de render
-            fetch(`${location.href.replace(/(.+\w\/)(.+)/,"/$2")}api/upload_image`, {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.message) {
-                    responseMessage.textContent = data.message;
-                    responseMessage.className = 'alert alert-success';
-                } else if (data.error) {
-                    responseMessage.textContent = data.error;
-                    responseMessage.className = 'alert alert-danger';
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                responseMessage.textContent = 'Error uploading image!';
+            const file = fileInput.files[0];
+            if (!file) {
+                responseMessage.textContent = 'Please select an image first!';
                 responseMessage.className = 'alert alert-danger';
+                return;
+            }
+
+            // Resize the image and then send it to the server
+            resizeImage(file, function(resizedBlob) {
+                const formData = new FormData();
+                formData.append('file', resizedBlob, 'resized_image.jpg');
+
+                // Actualiza aquí la ruta de render
+                fetch((location.href.replace(/(.+\w\/)(.+)/,"/$2")), {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.message) {
+                        responseMessage.textContent = data.message;
+                        responseMessage.className = 'alert alert-success';
+                    } else if (data.error) {
+                        responseMessage.textContent = data.error;
+                        responseMessage.className = 'alert alert-danger';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    responseMessage.textContent = 'Error uploading image!';
+                    responseMessage.className = 'alert alert-danger';
+                });
             });
         });
     </script>
