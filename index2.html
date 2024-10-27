@@ -47,7 +47,6 @@
         var loc = window.location.pathname;
         var dir = loc.substring(0, loc.lastIndexOf('/'));
         console.log(location.href.replace(/(.+\w\/)(.+)/,"/$2"));
-        console.log(dir);
 
         // Event listener for file input change to show image preview
         fileInput.addEventListener('change', function(event) {
@@ -70,7 +69,7 @@
             formData.append('file', fileInput.files[0]);
 
             // Actualiza aquí la ruta de render
-            fetch('http://127.0.0.1:5000/api/upload_image', {
+            fetch(`${location.href.replace(/(.+\w\/)(.+)/,"/$2")}api/upload_image`, {
                 method: 'POST',
                 body: formData
             })
