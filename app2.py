@@ -27,8 +27,7 @@ names = [
 
 # Inicializa la app
 app = Flask(__name__)
-CORS(app)
-
+CORS(app, resources={r"/api/*": {"origins": "https://api-for-birds-classification.onrender.com/"}})
 
 # Configuración para Render
 app.config['UPLOAD_FOLDER'] = '/tmp/uploaded_images'  # Carpeta temporal
