@@ -93,8 +93,8 @@
                 const formData = new FormData();
                 formData.append('file', resizedBlob, 'resized_image.jpg');
 
-                // Actualiza aquí la ruta de render
-                fetch((location.href.replace(/(.+\w\/)(.+)/,"/$2")), {
+                // Enviar la imagen redimensionada al servidor
+                fetch('/', {
                     method: 'POST',
                     body: formData
                 })
