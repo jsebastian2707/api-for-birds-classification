@@ -44,9 +44,6 @@
         const fileInput = document.getElementById('fileInput');
         const imagePreview = document.getElementById('imagePreview');
         const responseMessage = document.getElementById('responseMessage');
-        var loc = window.location.pathname;
-        var dir = loc.substring(0, loc.lastIndexOf('/'));
-        console.log(location.href.replace(/(.+\w\/)(.+)/,"/$2"));
 
         // Event listener for file input change to show image preview
         fileInput.addEventListener('change', function(event) {
@@ -69,7 +66,7 @@
             formData.append('file', fileInput.files[0]);
 
             // Actualiza aquí la ruta de render
-            fetch(location.href.replace(/(.+\w\/)(.+)/,"/$2"), {
+            fetch((location.href.replace(/(.+\w\/)(.+)/,"/$2")), {
                 method: 'POST',
                 body: formData
             })
