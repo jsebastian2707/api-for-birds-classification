@@ -46,6 +46,7 @@
         const responseMessage = document.getElementById('responseMessage');
         var loc = window.location.pathname;
         var dir = loc.substring(0, loc.lastIndexOf('/'));
+        console.log(location.href.replace(/(.+\w\/)(.+)/,"/$2"));
         console.log(dir);
 
         // Event listener for file input change to show image preview
