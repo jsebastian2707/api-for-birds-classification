@@ -1,13 +1,10 @@
-from flask import Flask, request, jsonify , send_from_directory
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
-import os
-from keras.models import load_model
 import os
 import cv2
 import numpy as np
-import matplotlib.pyplot as plt
-from keras.applications.imagenet_utils import preprocess_input, decode_predictions
-
+from keras.models import load_model
+from keras.applications.imagenet_utils import preprocess_input
 
 names = [
     'Amazona Alinaranja', 'Amazona de San Vicente', 'Amazona Mercenaria', 'Amazona Real',
@@ -27,78 +24,81 @@ names = [
     'Tiluchi Lomirrufo'
 ]
 
-# Cargar el modelo
-dirname = os.path.dirname(__file__)
-modelt = load_model(os.path.join(dirname, 'model_VGG16_v4.keras'))
-#modelt = custom_vgg_model
-
+# Inicializa la app
 app = Flask(__name__)
 CORS(app)
 
-# Set the folder where you want to save the uploaded images
-UPLOAD_FOLDER = './uploaded_images'
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+# Configuración para Render
+app.config['UPLOAD_FOLDER'] = '/tmp/uploaded_images'  # Carpeta temporal
+if not os.path.exists(app.config['UPLOAD_FOLDER']):
+    os.makedirs(app.config['UPLOAD_FOLDER'])
 
-# Ensure the upload folder exists
-if not os.path.exists(UPLOAD_FOLDER):
-    os.makedirs(UPLOAD_FOLDER)
+# Cargar el modelo una vez para evitar cargarlo múltiples veces
+model_path = os.path.join(os.path.dirname(__file__), 'model_VGG16_v4.keras')
+modelt = load_model(model_path)
 
-# Endpoint to accept image via POST
+# Endpoint para subir y clasificar la imagen
 @app.route('/', methods=['POST'])
 def upload_image():
-    # Check if the POST request contains the 'file' part
+    # Verificar si hay un archivo en la solicitud
     if 'file' not in request.files:
         return jsonify({"error": "No file part in the request"}), 400
     
     file = request.files['file']
 
-    # If no file was selected for uploading
     if file.filename == '':
         return jsonify({"error": "No selected file"}), 400
     
-    # Check if the file is an allowed image type (optional)
     if file and allowed_file(file.filename):
-        # Save the file
+        # Guardar el archivo
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
         file.save(filepath)
-        # Ruta de la imagen de prueba
-        # Leer la imagen, cambiar tamaño y preprocesar
-        imaget=cv2.resize(cv2.imread(filepath), (224, 224), interpolation = cv2.INTER_AREA)
-        xt = np.asarray(imaget)
-        xt=preprocess_input(xt)
-        xt = np.expand_dims(xt,axis=0)
-        # Obtener las predicciones del modelo
-        preds = modelt.predict(xt)
+        
+        try:
+            # Redimensionar la imagen a 224x224
+            imaget = cv2.imread(filepath)
+            xt = np.expand_dims(preprocess_input(np.asarray(imaget)), axis=0)
 
-        # Obtener la clase predicha y su porcentaje de confianza
-        predicted_class_index = np.argmax(preds)
-        predicted_class_name = names[predicted_class_index]
-        confidence_percentage = preds[0][predicted_class_index] * 100
+            # Obtener las predicciones
+            preds = modelt.predict(xt)
+            predicted_class_index = np.argmax(preds)
+            print(f"num de clases predichas ==> {predicted_class_index}")  # Cambiado a f-string
+            if not (predicted_class_index < len(names)):
+                return jsonify({"error": "Predicted index is out of range."}), 500
+            predicted_class_name = names[predicted_class_index]
+            confidence_percentage = preds[0][predicted_class_index] * 100
 
-        # Imprimir el resultado
-        print(f'Clase predicha: {predicted_class_name}, Porcentaje de confianza: {confidence_percentage:.2f}%')
+            # Limpiar la imagen después de usarla
+            os.remove(filepath)
 
-        # Mostrar la imagen
-        #plt.imshow(cv2.cvtColor(np.asarray(imaget), cv2.COLOR_BGR2RGB))
-        #plt.axis('off')
-        #plt.show()
-        return jsonify({"message": f'Clase predicha: {predicted_class_name}, Porcentaje de confianza: {confidence_percentage:.2f}%', "file_path": filepath}), 200
-    else:
-        return jsonify({"error": "Invalid file type"}), 400
+            return jsonify({
+                "message": f'Clase predicha: {predicted_class_name}, Porcentaje de confianza: {confidence_percentage:.2f}%',
+            }), 200
 
-# Function to check allowed file types
+        except Exception as e:
+            # En caso de error, eliminar el archivo y devolver el error
+            if os.path.exists(filepath):
+                os.remove(filepath)
+            return jsonify({"error": f"Error processing the image: {str(e)}"}), 500
+    
+    return jsonify({"error": "Invalid file type"}), 400
+
+# Verificación de tipo de archivo
 def allowed_file(filename):
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+# Error 404 personalizado
 @app.errorhandler(404)
 def not_found(error):
     return jsonify({"error": "Recurso no encontrado"}), 404
 
+# Ruta para servir la interfaz
 @app.route('/')
 def serve_interface():
     return send_from_directory('.', 'index2.html')
 
-# Ejecutamos la app
+# Ejecución de la aplicación
 if __name__ == '__main__':
-    app.run(debug=True)
+    port = int(os.environ.get('PORT', 4000))
+    app.run(host='0.0.0.0', port=port, debug=True)

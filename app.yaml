@@ -1,0 +1,7 @@
+runtime: python39  # Cambia según la versión que estés usando
+
+entrypoint: gunicorn -b :$PORT app2:app  # Reemplaza "app" con el nombre de tu archivo principal
+
+handlers:
+- url: /.*
+  script: auto
