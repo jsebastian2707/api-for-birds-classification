@@ -94,7 +94,7 @@
                 formData.append('file', resizedBlob, 'resized_image.jpg');
 
                 // Enviar la imagen redimensionada al servidor
-                fetch('/', {
+                fetch('/classify', {
                     method: 'POST',
                     body: formData
                 })

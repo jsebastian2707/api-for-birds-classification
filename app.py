@@ -6,6 +6,7 @@ import numpy as np
 from keras.models import load_model
 from keras.applications.imagenet_utils import preprocess_input
 
+# Lista de nombres de clases
 names = [
     'Amazona Alinaranja', 'Amazona de San Vicente', 'Amazona Mercenaria', 'Amazona Real',
     'Aratinga de Pinceles', 'Aratinga de Wagler', 'Aratinga Ojiblanca', 'Aratinga Orejigualda',
@@ -28,8 +29,8 @@ names = [
 app = Flask(__name__)
 CORS(app)
 
-# Configuración para Render
-app.config['UPLOAD_FOLDER'] = '/tmp/uploaded_images'  # Carpeta temporal
+# Configuración para carpeta de uploads
+app.config['UPLOAD_FOLDER'] = '/tmp/uploaded_images'
 if not os.path.exists(app.config['UPLOAD_FOLDER']):
     os.makedirs(app.config['UPLOAD_FOLDER'])
 
@@ -37,8 +38,13 @@ if not os.path.exists(app.config['UPLOAD_FOLDER']):
 model_path = os.path.join(os.path.dirname(__file__), 'model_VGG16_v4.keras')
 modelt = load_model(model_path)
 
+# Verificación de tipo de archivo
+def allowed_file(filename):
+    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 # Endpoint para subir y clasificar la imagen
-@app.route('/', methods=['POST'])
+@app.route('/classify', methods=['POST'])
 def upload_image():
     # Verificar si hay un archivo en la solicitud
     if 'file' not in request.files:
@@ -55,14 +61,13 @@ def upload_image():
         file.save(filepath)
         
         try:
-            # Redimensionar la imagen a 224x224
+            # Leer la imagen y redimensionar
             imaget = cv2.imread(filepath)
             xt = np.expand_dims(preprocess_input(np.asarray(imaget)), axis=0)
 
             # Obtener las predicciones
             preds = modelt.predict(xt)
             predicted_class_index = np.argmax(preds)
-            print(f"num de clases predichas ==> {predicted_class_index}")  # Cambiado a f-string
             if not (predicted_class_index < len(names)):
                 return jsonify({"error": "Predicted index is out of range."}), 500
             predicted_class_name = names[predicted_class_index]
@@ -83,11 +88,6 @@ def upload_image():
     
     return jsonify({"error": "Invalid file type"}), 400
 
-# Verificación de tipo de archivo
-def allowed_file(filename):
-    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
 # Error 404 personalizado
 @app.errorhandler(404)
 def not_found(error):
@@ -100,5 +100,5 @@ def serve_interface():
 
 # Ejecución de la aplicación
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 4000))
+    port = int(os.environ.get('PORT', 8000))
     app.run(host='0.0.0.0', port=port, debug=True)
