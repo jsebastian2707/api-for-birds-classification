@@ -5,7 +5,6 @@ import cv2
 import numpy as np
 from keras.models import load_model
 from keras.applications.imagenet_utils import preprocess_input
-from tensorflow.keras import backend as K
 
 names = [
     'Amazona Alinaranja', 'Amazona de San Vicente', 'Amazona Mercenaria', 'Amazona Real',
@@ -56,17 +55,16 @@ def upload_image():
         file.save(filepath)
         
         try:
-            # Leer y preprocesar la imagen (sin redimensionar)
+            # Redimensionar la imagen a 224x224
             imaget = cv2.imread(filepath)
-            if imaget is None or imaget.shape[:2] != (224, 224):
-                os.remove(filepath)
-                return jsonify({"error": "Image size is incorrect. Please upload a 224x224 image."}), 400
-
             xt = np.expand_dims(preprocess_input(np.asarray(imaget)), axis=0)
 
             # Obtener las predicciones
             preds = modelt.predict(xt)
             predicted_class_index = np.argmax(preds)
+            print(f"num de clases predichas ==> {predicted_class_index}")  # Cambiado a f-string
+            if not (predicted_class_index < len(names)):
+                return jsonify({"error": "Predicted index is out of range."}), 500
             predicted_class_name = names[predicted_class_index]
             confidence_percentage = preds[0][predicted_class_index] * 100
 
