@@ -5,7 +5,6 @@ import cv2
 import numpy as np
 from keras.models import load_model
 from keras.applications.imagenet_utils import preprocess_input
-
 # Lista de nombres de clases
 names = [
     'Amazona Alinaranja', 'Amazona de San Vicente', 'Amazona Mercenaria', 'Amazona Real',
@@ -27,6 +26,7 @@ names = [
 
 # Inicializa la app
 app = Flask(__name__)
+app.config['DEBUG'] = os.environ.get('FLASK_DEBUG')
 CORS(app)
 
 # Configuración para carpeta de uploads
@@ -100,5 +100,5 @@ def serve_interface():
 
 # Ejecución de la aplicación
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 8000))
-    app.run(host='0.0.0.0', port=port, debug=True)
+    port = int(os.environ.get('PORT', 8080))
+    app.run(host='0.0.0.0', port=port)
